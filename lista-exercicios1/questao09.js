@@ -29,6 +29,8 @@ switch (codigo) {
       console.log("Centro-Oeste");
     } else if (codigo >= 25 && codigo <= 50) {
       console.log("Nordeste");
+    } else if (isNaN(codigo)) {
+      console.log("isso não é um número!");
     } else {
       console.log("Produto Importado");
     }

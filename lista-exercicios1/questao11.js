@@ -7,8 +7,12 @@ const prompt = require("prompt-sync")();
 
 let num = 1;
 
-while (num >= 0) {
+while (num > 0 && !isNaN(num)) {
   num = parseInt(prompt("digite um numero: "));
+
+  if (num <= 0 || isNaN(num)) {
+    return;
+  }
   if (num % 2 == 0) {
     console.log("PAR");
   } else {
