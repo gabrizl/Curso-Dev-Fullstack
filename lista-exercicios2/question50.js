@@ -1,104 +1,140 @@
-// Data storage
+const prompt = require("prompt-sync")();
+
+class Hotel {
+  constructor(id, name, city, totalRooms) {
+    this.id = id;
+    this.name = name;
+    this.city = city;
+    this.totalRooms = totalRooms;
+    this.availableRooms = totalRooms;
+  }
+}
+
+class Reservation {
+  constructor(idReserva, idHotel, nomeCliente) {
+    this.idReserva = idReserva;
+    this.idHotel = idHotel;
+    this.nomeCliente = nomeCliente;
+  }
+}
+
 let hotels = [];
 let reservations = [];
 let reservationIdCounter = 1;
 
-// Hotel constructor
-function Hotel(id, name, city, totalRooms) {
-  this.id = id;
-  this.name = name;
-  this.city = city;
-  this.totalRooms = totalRooms;
-  this.availableRooms = totalRooms;
-}
-
-// Reservation constructor
-function Reservation(reservationId, hotelId, clientName) {
-  this.reservationId = reservationId;
-  this.hotelId = hotelId;
-  this.clientName = clientName;
-}
-
-// Add a new hotel
-function addHotel(name, city, totalRooms) {
+function addHotel() {
   const id = hotels.length + 1;
+  const name = prompt("Enter hotel name: ");
+  const city = prompt("Enter hotel city: ");
+  const totalRooms = parseInt(prompt("Enter total rooms: "), 10);
   const newHotel = new Hotel(id, name, city, totalRooms);
   hotels.push(newHotel);
   console.log(`Hotel added: ${name} in ${city} with ${totalRooms} rooms.`);
 }
 
-// Search for hotels by city
-function searchHotelsByCity(city) {
-  const foundHotels = hotels.filter(hotel => hotel.city.toLowerCase() === city.toLowerCase());
-  if (foundHotels.length === 0) {
-    console.log(`No hotels found in ${city}.`);
-  } else {
+function findHotelsByCity() {
+  const city = prompt("Enter city to search for hotels: ");
+  const foundHotels = hotels.filter(
+    (hotel) => hotel.city.toLowerCase() === city.toLowerCase()
+  );
+  if (foundHotels.length > 0) {
     console.log(`Hotels available in ${city}:`);
-    foundHotels.forEach(hotel => {
-      console.log(`- ${hotel.name} (ID: ${hotel.id}, Available rooms: ${hotel.availableRooms})`);
+    foundHotels.forEach((hotel) => {
+      console.log(
+        `ID: ${hotel.id}, Name: ${hotel.name}, Available Rooms: ${hotel.availableRooms}`
+      );
     });
+  } else {
+    console.log(`No hotels found in ${city}.`);
   }
 }
 
-// Make a reservation
-function makeReservation(hotelId, clientName) {
-  const hotel = hotels.find(h => h.id === hotelId);
-  if (!hotel) {
-    console.log(`Hotel with ID ${hotelId} not found.`);
-    return;
-  }
-  if (hotel.availableRooms > 0) {
-    const newReservation = new Reservation(reservationIdCounter++, hotelId, clientName);
+function makeReservation() {
+  const idHotel = parseInt(prompt("Enter hotel ID for reservation: "), 10);
+  const nomeCliente = prompt("Enter your name: ");
+  const hotel = hotels.find((h) => h.id === idHotel);
+  if (hotel && hotel.availableRooms > 0) {
+    const newReservation = new Reservation(
+      reservationIdCounter++,
+      idHotel,
+      nomeCliente
+    );
     reservations.push(newReservation);
     hotel.availableRooms--;
-    console.log(`Reservation made for ${clientName} at ${hotel.name}. Reservation ID: ${newReservation.reservationId}`);
+    console.log(
+      `Reservation made for ${nomeCliente} at hotel ${hotel.name}. Reservation ID: ${newReservation.idReserva}`
+    );
   } else {
-    console.log(`No available rooms at ${hotel.name}.`);
+    console.log(`Reservation failed. Hotel not found or no available rooms.`);
   }
 }
 
-// Cancel a reservation
-function cancelReservation(reservationId) {
-  const reservationIndex = reservations.findIndex(r => r.reservationId === reservationId);
-  if (reservationIndex === -1) {
-    console.log(`Reservation with ID ${reservationId} not found.`);
-    return;
+function cancelReservation() {
+  const idReserva = parseInt(prompt("Enter reservation ID to cancel: "), 10);
+  const reservationIndex = reservations.findIndex(
+    (r) => r.idReserva === idReserva
+  );
+  if (reservationIndex !== -1) {
+    const reservation = reservations[reservationIndex];
+    const hotel = hotels.find((h) => h.id === reservation.idHotel);
+    if (hotel) {
+      hotel.availableRooms++;
+    }
+    reservations.splice(reservationIndex, 1);
+    console.log(`Reservation ID ${idReserva} cancelled.`);
+  } else {
+    console.log(`Reservation ID ${idReserva} not found.`);
   }
-  const reservation = reservations[reservationIndex];
-  const hotel = hotels.find(h => h.id === reservation.hotelId);
-  if (hotel) {
-    hotel.availableRooms++;
-  }
-  reservations.splice(reservationIndex, 1);
-  console.log(`Reservation ID ${reservationId} canceled.`);
 }
 
-// List all reservations
 function listReservations() {
-  if (reservations.length === 0) {
-    console.log("No reservations found.");
-    return;
+  if (reservations.length > 0) {
+    console.log(`List of all reservations:`);
+    reservations.forEach((reservation) => {
+      const hotel = hotels.find((h) => h.id === reservation.idHotel);
+      console.log(
+        `Reservation ID: ${reservation.idReserva}, Hotel: ${hotel.name}, Client: ${reservation.nomeCliente}`
+      );
+    });
+  } else {
+    console.log(`No reservations found.`);
   }
-  console.log("All reservations:");
-  reservations.forEach(reservation => {
-    const hotel = hotels.find(h => h.id === reservation.hotelId);
-    console.log(`- Reservation ID: ${reservation.reservationId}, Client: ${reservation.clientName}, Hotel: ${hotel.name}, City: ${hotel.city}`);
-  });
 }
 
-// Example usage
-addHotel("Hotel Sunshine", "New York", 10);
-addHotel("Hotel Moonlight", "Los Angeles", 5);
-addHotel("Hotel Starlight", "New York", 8);
+function mainMenu() {
+  while (true) {
+    console.log("\nHotel Reservation System");
+    console.log("1. Add Hotel");
+    console.log("2. Search Hotels by City");
+    console.log("3. Make Reservation");
+    console.log("4. Cancel Reservation");
+    console.log("5. List Reservations");
+    console.log("6. Exit");
+    const choice = parseInt(prompt("Enter your choice: "), 10);
 
-searchHotelsByCity("New York");
+    switch (choice) {
+      case 1:
+        addHotel();
+        break;
+      case 2:
+        findHotelsByCity();
+        break;
+      case 3:
+        makeReservation();
+        break;
+      case 4:
+        cancelReservation();
+        break;
+      case 5:
+        listReservations();
+        break;
+      case 6:
+        console.log("Exiting system.");
+        return;
+      default:
+        console.log("Invalid choice, please try again.");
+    }
+  }
+}
 
-makeReservation(1, "John Doe");
-makeReservation(1, "Jane Smith");
-makeReservation(2, "Alice Johnson");
-
-listReservations();
-
-cancelReservation(1);
-
-listReservations();
+mainMenu();
